@@ -1,0 +1,42 @@
+apache:
+  image: centos/httpd
+  volumes:
+    - .:/var/www/localhost/www/html/
+    - ./etc/apache/localhost.conf:/etc/httpd/conf.d/welcome.conf
+  links:
+    - php
+  ports:
+    - "80:80"
+
+wordpress:
+  image: wordpress
+  restart: always
+  links:
+    - mysql
+  ports:
+    - 8080:80
+  environment:
+    WORDPRESS_DB_HOST: mysql
+    WORDPRESS_DB_USER: wordpress_gs_user
+    WORDPRESS_DB_PASSWORD: 1234
+    WORDPRESS_DB_NAME: wordpress_gs
+
+mysql:
+  image: mariadb:10.5
+  volumes:
+    - ./etc/db/config.cnf:/etc/mysql/conf.d/config.cnf
+  environment:
+    MYSQL_ROOT_PASSWORD: root
+    MYSQL_DATABASE: wordpress_gs
+    MYSQL_USER: wordpress_gs_user
+    MYSQL_PASSWORD: 1234
+  ports:
+    - 3306:3306
+
+php:
+  build: ./etc/php
+  volumes:
+    - .:/var/www/localhost/www/html/
+    - ./etc/php/php.ini:/usr/local/etc/php/php.ini
+  links:
+    - mysql
